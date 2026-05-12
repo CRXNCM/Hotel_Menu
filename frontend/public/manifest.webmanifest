@@ -1,0 +1,21 @@
+{
+  "name": "Just Hotel Menu",
+  "short_name": "HotelMenu",
+  "start_url": "/menu",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "description": "Luxury hotel guest menu with quick mobile access.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icons.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
