@@ -81,10 +81,15 @@ const MenuPage = () => {
         localStorage.setItem("cached-menu-items", JSON.stringify(nextItems));
         localStorage.setItem("cached-menu-categories", JSON.stringify(nextCategories));
       } catch {
-        const cachedItems = JSON.parse(localStorage.getItem("cached-menu-items") || "[]");
-        const cachedCategories = JSON.parse(localStorage.getItem("cached-menu-categories") || "[]");
-        setItems(cachedItems);
-        setCategories(cachedCategories);
+        try {
+          const cachedItems = JSON.parse(localStorage.getItem("cached-menu-items") || "[]");
+          const cachedCategories = JSON.parse(localStorage.getItem("cached-menu-categories") || "[]");
+          setItems(cachedItems);
+          setCategories(cachedCategories);
+        } catch {
+          setItems([]);
+          setCategories([]);
+        }
         setConnectionStatus("offline");
       } finally {
         setLoading(false);

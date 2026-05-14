@@ -37,7 +37,18 @@ const HotelPage = () => {
   }, [language]);
 
   useEffect(() => {
-    api.get("/hotel").then((response) => setInfo(response.data));
+    let cancelled = false;
+    api
+      .get("/hotel")
+      .then((response) => {
+        if (!cancelled) setInfo(response.data);
+      })
+      .catch(() => {
+        if (!cancelled) setInfo(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const labels = {

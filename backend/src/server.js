@@ -5,12 +5,13 @@ const connectDB = require("./config/db");
 const seedAdmin = require("./utils/seedAdmin");
 
 const PORT = process.env.PORT || 5000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 const startServer = async () => {
   await connectDB();
   await seedAdmin();
-  app.listen(PORT, () => {
-    console.log(`Server listening on port ${PORT}`);
+  app.listen(PORT, HOST, () => {
+    console.log(`Server listening on http://${HOST}:${PORT}`);
   });
 };
 
