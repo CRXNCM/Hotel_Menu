@@ -10,11 +10,28 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const imageManagerRoutes = require("./routes/imageManagerRoutes");
 
 const app = express();
+const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
 
-app.use(cors());
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || !allowedOrigins.length || allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("CORS origin not allowed."));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+app.use("/uploads", express.static(uploadsRoot));
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

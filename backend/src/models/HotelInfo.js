@@ -5,6 +5,7 @@ const hotelInfoSchema = new mongoose.Schema(
     about: { type: String, default: "" },
     phone: { type: String, default: "" },
     whatsapp: { type: String, default: "" },
+    address: { type: String, default: "" },
     location: { type: String, default: "" },
     checkIn: { type: String, default: "" },
     checkOut: { type: String, default: "" },

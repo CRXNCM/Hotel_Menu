@@ -2,8 +2,9 @@ const fs = require("fs/promises");
 const path = require("path");
 const MenuItem = require("../models/MenuItem");
 
-const TEMP_DIR = path.join(process.cwd(), "uploads", "temp");
-const MENU_DIR = path.join(process.cwd(), "uploads", "menu");
+const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
+const TEMP_DIR = path.join(uploadsRoot, "temp");
+const MENU_DIR = path.join(uploadsRoot, "menu");
 const IMAGE_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"]);
 
 const ensureDirectories = async () => {

@@ -10,7 +10,14 @@ import FoodCard from "../components/ui/FoodCard";
 import FoodModal from "../components/ui/FoodModal";
 import FeaturedSection from "../components/ui/FeaturedSection";
 import hotelLogo from "../assets/logo black.png";
+import hotelcover from "../assets/hotelcover.png";
+import hotelgallery1 from "../assets/hotelgallery.png";
+import hotelgallery2 from "../assets/hotelgallery2.png";
+import hotelgallery3 from "../assets/hotelgallery3.png";
+import hotelgallery4 from "../assets/hotelgallery4.png";
 import { getText, SUPPORTED_LANGUAGES } from "../utils/i18n";
+
+const GALLERY_IMAGES = [hotelgallery1, hotelgallery2, hotelgallery3, hotelgallery4];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -123,6 +130,7 @@ const MenuPage = () => {
       language: getText(language, "language"),
       aboutOurHotel: getText(language, "aboutOurHotel"),
       exploreHotel: getText(language, "exploreHotel"),
+      gallery: getText(language, "gallery"),
     }),
     [language]
   );
@@ -145,49 +153,56 @@ const MenuPage = () => {
       <Navbar language={language} onLanguageChange={setLanguage} labels={labels} />
       <section
         id="hero"
-        className="relative flex min-h-[86vh] items-end overflow-hidden border-b border-emerald-200/10 bg-[url('https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=1600')] bg-cover bg-center px-4 pb-8 pt-24 sm:px-6"
+        className="relative flex min-h-[90vh] min-h-[min(92dvh,40rem)] flex-col justify-end overflow-hidden border-b border-emerald-200/10 bg-cover bg-center bg-no-repeat px-4 pb-4 pt-[4.5rem] sm:min-h-[78vh] sm:px-6 sm:pb-8 sm:pt-24 lg:min-h-[86vh]"
+        style={{ backgroundImage: `url(${hotelcover})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/35" />
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative z-10 mx-auto w-full max-w-6xl rounded-3xl border border-emerald-200/20 bg-black/35 p-5 backdrop-blur-md sm:p-7"
+          transition={{ duration: 0.55, ease: "easeOut" }}
+          className="relative z-10 mx-auto w-full max-w-6xl pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-0"
         >
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-2xl space-y-3">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-amber-300">{labels.heroBadge}</p>
-              <h1 className="text-3xl font-semibold leading-tight text-amber-50 sm:text-5xl">
+          <div className="flex flex-col gap-4 rounded-3xl border border-emerald-200/20 bg-black/35 p-4 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:p-7">
+            <div className="min-w-0 flex-1 space-y-2.5 sm:space-y-3">
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-amber-300 sm:text-sm sm:tracking-[0.2em]">
+                {labels.heroBadge}
+              </p>
+              <h1 className="text-balance text-2xl font-semibold leading-[1.15] text-amber-50 sm:text-4xl sm:leading-tight md:text-5xl">
                 {labels.heroTitle}
               </h1>
-              <p className="text-base text-slate-200 sm:text-lg">
-                {labels.heroDescription}
-              </p>
+              <p className="text-sm leading-relaxed text-slate-200 sm:text-base">{labels.heroDescription}</p>
               {(roomNumber || tableNumber) && (
-                <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
+                <div className="flex flex-wrap gap-2 text-[11px] sm:text-sm">
                   {roomNumber && (
-                    <span className="rounded-xl border border-amber-300/40 bg-black/45 px-3 py-2 text-amber-100">
+                    <span className="rounded-xl border border-amber-300/40 bg-black/45 px-2.5 py-1.5 text-amber-100 sm:px-3 sm:py-2">
                       {labels.qrRoom}: {roomNumber}
                     </span>
                   )}
                   {tableNumber && (
-                    <span className="rounded-xl border border-amber-300/40 bg-black/45 px-3 py-2 text-amber-100">
+                    <span className="rounded-xl border border-amber-300/40 bg-black/45 px-2.5 py-1.5 text-amber-100 sm:px-3 sm:py-2">
                       {labels.qrTable}: {tableNumber}
                     </span>
                   )}
                 </div>
               )}
-              <div className="grid grid-cols-1 gap-2 text-sm text-slate-100 sm:grid-cols-3">
-                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-3 py-2">{labels.heroLobby}</span>
-                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-3 py-2">{labels.heroSignature}</span>
-                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-3 py-2">{labels.heroRooftop}</span>
+              <div className="grid grid-cols-1 gap-2 text-xs text-slate-100 sm:grid-cols-3 sm:text-sm">
+                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-2.5 py-2 sm:px-3">
+                  {labels.heroLobby}
+                </span>
+                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-2.5 py-2 sm:px-3">
+                  {labels.heroSignature}
+                </span>
+                <span className="rounded-xl border border-emerald-300/30 bg-black/40 px-2.5 py-2 sm:px-3">
+                  {labels.heroRooftop}
+                </span>
               </div>
             </div>
             <img
               src={hotelLogo}
               alt="Just Hotel luxury logo"
               loading="lazy"
-              className="mx-auto h-28 w-28 rounded-full border border-emerald-200/30 object-cover shadow-2xl shadow-black/60 sm:mx-0 sm:h-36 sm:w-36"
+              className="mx-auto h-24 w-24 shrink-0 self-center rounded-full border border-emerald-200/30 object-cover shadow-2xl shadow-black/60 sm:mx-0 sm:h-36 sm:w-36 sm:self-auto"
             />
           </div>
         </motion.div>
@@ -286,6 +301,18 @@ const MenuPage = () => {
             <p className="mt-2 text-sm leading-relaxed text-slate-200">
               Luxury rooms, fine dining, rooftop experience, and premium guest service — designed for comfort and style.
             </p>
+            <p className="mt-4 text-xs font-medium uppercase tracking-wide text-amber-300/90">{labels.gallery}</p>
+            <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {GALLERY_IMAGES.map((src, index) => (
+                <img
+                  key={src}
+                  src={src}
+                  alt={`${labels.gallery} ${index + 1}`}
+                  loading="lazy"
+                  className="aspect-[4/3] w-full rounded-xl border border-emerald-200/10 object-cover"
+                />
+              ))}
+            </div>
             <Link
               to="/hotel"
               className="mt-4 inline-flex h-11 items-center justify-center rounded-xl bg-amber-400 px-5 text-sm font-semibold text-slate-900 transition hover:brightness-110 active:scale-[0.99]"

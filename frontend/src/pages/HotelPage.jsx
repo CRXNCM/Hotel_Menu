@@ -2,7 +2,29 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/ui/Navbar";
 import api from "../services/api";
+import hotelcover from "../assets/hotelcover.png";
+import hotelgallery1 from "../assets/hotelgallery.png";
+import hotelgallery2 from "../assets/hotelgallery2.png";
+import hotelgallery3 from "../assets/hotelgallery3.png";
+import hotelgallery4 from "../assets/hotelgallery4.png";
 import { getText } from "../utils/i18n";
+
+const GALLERY_IMAGES = [hotelgallery1, hotelgallery2, hotelgallery3, hotelgallery4];
+
+const ethTelHref = (local) => {
+  const digits = String(local || "").replace(/\D/g, "");
+  if (!digits) return null;
+  if (digits.startsWith("251")) return `tel:+${digits}`;
+  if (digits.startsWith("0")) return `tel:+251${digits.slice(1)}`;
+  return `tel:+251${digits}`;
+};
+
+const waMeHref = (local) => {
+  const digits = String(local || "").replace(/\D/g, "");
+  if (!digits) return null;
+  const n = digits.startsWith("251") ? digits : digits.startsWith("0") ? `251${digits.slice(1)}` : `251${digits}`;
+  return `https://wa.me/${n}`;
+};
 
 const HotelPage = () => {
   const [info, setInfo] = useState(null);
@@ -31,22 +53,23 @@ const HotelPage = () => {
     gallery: getText(language, "gallery"),
     contact: getText(language, "contact"),
     location: getText(language, "location"),
+    phoneLabel: getText(language, "phoneLabel"),
+    whatsappLabel: getText(language, "whatsappLabel"),
+    emergencyLabel: getText(language, "emergencyLabel"),
     footerNote: getText(language, "footerNote"),
   };
 
   const facilities =
     info?.facilities?.length
       ? info.facilities
-      : ["WiFi", "Gym", "Parking", "Pool", "Dining", "Spa"];
+      : ["WiFi", "Gym", "Parking", "Dining"];
 
   const facilityIcon = (name) => {
     const key = String(name || "").toLowerCase();
     if (key.includes("wifi")) return "📶";
     if (key.includes("gym")) return "🏋️";
     if (key.includes("park")) return "🚗";
-    if (key.includes("pool")) return "🏊";
     if (key.includes("dining") || key.includes("restaurant")) return "🍽️";
-    if (key.includes("spa")) return "💆";
     return "✨";
   };
 
@@ -54,7 +77,10 @@ const HotelPage = () => {
     <main className="min-h-screen bg-gradient-to-b from-black via-slate-950 to-emerald-950/70 text-slate-100">
       <Navbar language={language} onLanguageChange={setLanguage} labels={labels} />
       <section className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6">
-        <section className="relative overflow-hidden rounded-3xl border border-emerald-200/10 bg-[url('https://images.unsplash.com/photo-1551887373-6fd1d6b8bca8?w=1600')] bg-cover bg-center">
+        <section
+          className="relative overflow-hidden rounded-3xl border border-emerald-200/10 bg-cover bg-center"
+          style={{ backgroundImage: `url(${hotelcover})` }}
+        >
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-black/30" />
           <div className="relative p-6 sm:p-10">
             <p className="text-xs font-medium uppercase tracking-[0.28em] text-amber-300">{labels.hotelInfoTitle}</p>
@@ -69,7 +95,7 @@ const HotelPage = () => {
               >
                 ← {labels.menu}
               </Link>
-              {info?.location && (
+              {info?.location ? (
                 <a
                   className="inline-flex h-11 items-center justify-center rounded-xl bg-amber-400 px-5 text-sm font-semibold text-slate-900 transition hover:brightness-110 active:scale-[0.99]"
                   href={info.location}
@@ -78,7 +104,7 @@ const HotelPage = () => {
                 >
                   Open Maps
                 </a>
-              )}
+              ) : null}
             </div>
           </div>
         </section>
@@ -108,19 +134,12 @@ const HotelPage = () => {
 
         <section className="rounded-2xl border border-emerald-200/15 bg-slate-900/45 p-5 backdrop-blur-md">
           <h3 className="text-lg font-semibold text-amber-100">{labels.gallery}</h3>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {[
-              "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1200",
-              "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=1200",
-              "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
-              "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
-              "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200",
-              "https://images.unsplash.com/photo-1551887373-6fd1d6b8bca8?w=1200",
-            ].map((src) => (
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {GALLERY_IMAGES.map((src, index) => (
               <img
                 key={src}
                 src={src}
-                alt="Hotel gallery"
+                alt={`${labels.gallery} ${index + 1}`}
                 loading="lazy"
                 className="h-32 w-full rounded-2xl border border-emerald-200/10 object-cover sm:h-40"
               />
@@ -133,28 +152,64 @@ const HotelPage = () => {
             <h3 className="text-lg font-semibold text-amber-100">{labels.contact}</h3>
             <div className="mt-3 space-y-2 text-sm text-slate-200">
               <p>
-                <span className="text-slate-400">Phone:</span> {info?.phone || "N/A"}
+                <span className="text-slate-400">{labels.phoneLabel}:</span>{" "}
+                {info?.phone && ethTelHref(info.phone) ? (
+                  <a
+                    href={ethTelHref(info.phone)}
+                    className="font-medium text-amber-200/95 underline decoration-amber-400/35 underline-offset-2 hover:text-amber-50"
+                  >
+                    {info.phone}
+                  </a>
+                ) : (
+                  <span>N/A</span>
+                )}
               </p>
               <p>
-                <span className="text-slate-400">WhatsApp:</span> {info?.whatsapp || "N/A"}
+                <span className="text-slate-400">{labels.whatsappLabel}:</span>{" "}
+                {info?.whatsapp && waMeHref(info.whatsapp) ? (
+                  <a
+                    href={waMeHref(info.whatsapp)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-amber-200/95 underline decoration-amber-400/35 underline-offset-2 hover:text-amber-50"
+                  >
+                    {info.whatsapp}
+                  </a>
+                ) : (
+                  <span>N/A</span>
+                )}
               </p>
               <p>
-                <span className="text-slate-400">Emergency:</span> {info?.emergencyContact || "N/A"}
+                <span className="text-slate-400">{labels.emergencyLabel}:</span>{" "}
+                {info?.emergencyContact && ethTelHref(info.emergencyContact) ? (
+                  <a
+                    href={ethTelHref(info.emergencyContact)}
+                    className="font-medium text-amber-200/95 underline decoration-amber-400/35 underline-offset-2 hover:text-amber-50"
+                  >
+                    {info.emergencyContact}
+                  </a>
+                ) : (
+                  <span>N/A</span>
+                )}
               </p>
             </div>
           </section>
 
           <section className="rounded-2xl border border-emerald-200/15 bg-slate-900/45 p-5 backdrop-blur-md">
             <h3 className="text-lg font-semibold text-amber-100">{labels.location}</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-200">
+            <p className="mt-3 text-sm leading-relaxed text-slate-200 whitespace-pre-line">
               {info?.address || "Open the map for directions to the hotel location."}
             </p>
             <div className="mt-4">
               <a
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-200/20 bg-black/25 px-5 text-sm font-semibold text-slate-100 backdrop-blur-md transition hover:border-emerald-200/35 active:scale-[0.99]"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-200/20 bg-black/25 px-5 text-sm font-semibold text-slate-100 backdrop-blur-md transition hover:border-emerald-200/35 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40"
                 href={info?.location || "#"}
                 target="_blank"
                 rel="noreferrer"
+                aria-disabled={!info?.location}
+                onClick={(e) => {
+                  if (!info?.location) e.preventDefault();
+                }}
               >
                 Open Google Maps
               </a>

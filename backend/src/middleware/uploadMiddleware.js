@@ -1,8 +1,19 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
+const menuUploads = path.join(uploadsRoot, "menu");
+const tempUploads = path.join(uploadsRoot, "temp");
+
+[uploadsRoot, menuUploads, tempUploads].forEach((dirPath) => {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
+});
 
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, "uploads"),
+  destination: (_req, _file, cb) => cb(null, uploadsRoot),
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname);
     const base = path.basename(file.originalname, ext).replace(/\s+/g, "-");

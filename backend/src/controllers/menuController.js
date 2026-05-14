@@ -1,4 +1,5 @@
 const MenuItem = require("../models/MenuItem");
+const { augmentMenuItemsWithLocalImages } = require("../utils/menuItemImageResolver");
 
 const getMenuItems = async (req, res) => {
   const { category, search, tags, isFeatured, isAvailable } = req.query;
@@ -16,8 +17,9 @@ const getMenuItems = async (req, res) => {
     if (tagsArray.length) query.tags = { $all: tagsArray };
   }
 
-  const items = await MenuItem.find(query).sort({ createdAt: -1 });
-  res.json(items);
+  const items = await MenuItem.find(query).sort({ createdAt: -1 }).lean();
+  const withImages = await augmentMenuItemsWithLocalImages(items);
+  res.json(withImages);
 };
 
 const createMenuItem = async (req, res) => {
