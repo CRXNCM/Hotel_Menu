@@ -304,7 +304,7 @@ const MenuPage = () => {
           <div className="rounded-2xl border border-emerald-200/15 bg-slate-900/45 p-5 shadow-sm backdrop-blur-md">
             <h3 className="text-lg font-semibold text-amber-100">🏨 {labels.aboutOurHotel}</h3>
             <p className="mt-2 text-sm leading-relaxed text-slate-200">
-              Luxury rooms, fine dining, rooftop experience, and premium guest service — designed for comfort and style.
+              Luxury room, fine dining, rooftop experience, and premium guest service — designed for comfort and style.
             </p>
             <p className="mt-4 text-xs font-medium uppercase tracking-wide text-amber-300/90">{labels.gallery}</p>
             <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
