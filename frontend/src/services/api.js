@@ -2,10 +2,15 @@ import axios from "axios";
 import { describeApiError, logApiError } from "../utils/apiErrors";
 
 /**
- * Backend mounts routes under `/api` (e.g. POST /api/login).
+ * Backend mounts routes under `/api` (e.g. GET /api/menu, POST /api/login).
  * - If VITE_API_URL is only the origin, `/api` is appended.
  * - Fixes common Vercel mistakes: pasting `VITE_API_URL=https://...` as the *value*,
- *   or `https:/host` (one slash), which otherwise become a path on the frontend host → 405.
+ *   or `https:/host` (one slash).
+ *
+ * Axios: if `url` starts with `/`, it is resolved from the host root and *replaces*
+ * the baseURL path — so base `https://host/api` + get(`/menu`) wrongly becomes
+ * `https://host/menu`. We always end baseURL with `/` and strip a leading `/` from
+ * `config.url` in a request interceptor so `/menu` → `menu` → `.../api/menu`.
  */
 function normalizeApiBase(raw) {
   let v = String(raw ?? "")
@@ -36,7 +41,14 @@ function normalizeApiBase(raw) {
   return `${noTrail}/api`;
 }
 
-const baseURL = normalizeApiBase(import.meta.env.VITE_API_URL);
+/** Trailing slash so relative paths append (axios combineURLs). */
+function baseUrlWithTrailingSlash(base) {
+  const b = String(base || "").trim();
+  if (!b) return "/api/";
+  return b.endsWith("/") ? b : `${b}/`;
+}
+
+const baseURL = baseUrlWithTrailingSlash(normalizeApiBase(import.meta.env.VITE_API_URL));
 
 if (typeof window !== "undefined" && import.meta.env.PROD) {
   const raw = String(import.meta.env.VITE_API_URL ?? "");
@@ -55,6 +67,9 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  if (typeof config.url === "string" && config.url.startsWith("/")) {
+    config.url = config.url.slice(1);
+  }
   const token = localStorage.getItem("adminToken");
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
