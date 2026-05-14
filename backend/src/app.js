@@ -11,6 +11,15 @@ const imageManagerRoutes = require("./routes/imageManagerRoutes");
 
 const app = express();
 const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
+const port = process.env.PORT || 4000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`)
+})
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
