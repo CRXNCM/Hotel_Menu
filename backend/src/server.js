@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ quiet: Boolean(process.env.RENDER) });
 
 const app = require("./app");
 const connectDB = require("./config/db");
@@ -17,5 +17,6 @@ const startServer = async () => {
 
 startServer().catch((error) => {
   console.error("Failed to start server:", error.message);
+  if (error.stack) console.error(error.stack);
   process.exit(1);
 });
