@@ -101,7 +101,7 @@ const HotelPage = () => {
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link
-                to="/menu"
+                to="/api/api/menu"
                 className="inline-flex h-11 items-center justify-center rounded-xl border border-emerald-200/20 bg-black/25 px-5 text-sm font-semibold text-slate-100 backdrop-blur-md transition hover:border-emerald-200/35 active:scale-[0.99]"
               >
                 ← {labels.menu}
