@@ -1,47 +1,52 @@
 import axios from "axios";
 
 /**
- * Expected env:
- * VITE_API_URL = https://your-backend.onrender.com/api
+ * Backend mounts routes under `/api` (e.g. GET /api/menu, GET /api/categories).
+ * If VITE_API_URL is only the origin (no `/api`), requests become `/menu` and return 404.
  */
-const API_BASE = import.meta.env.VITE_API_URL;
-
-// Fail fast if env is missing (helps avoid silent 404s)
-if (!API_BASE) {
-  console.error("❌ VITE_API_URL is not defined in environment variables");
+function normalizeApiBase(raw) {
+  const v = String(raw ?? "").trim();
+  if (!v) return "/api";
+  const noTrail = v.replace(/\/+$/, "");
+  if (/\/api$/i.test(noTrail)) return noTrail;
+  if (noTrail === "api") return "/api";
+  return `${noTrail}/api`;
 }
 
+const baseURL = normalizeApiBase(import.meta.env.VITE_API_URL);
+
 const api = axios.create({
-  baseURL: API_BASE,
+  baseURL,
   timeout: 15000,
 });
 
-// Attach admin token automatically (if exists)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("adminToken");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Global error handler (useful for debugging production issues)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (!error.response) {
       console.warn(
-        "❌ Network error: backend not reachable or CORS/network issue",
-        error.message
+        "[api] No response (network/CORS/backend down):",
+        error.message,
+        error.config?.baseURL && error.config?.url
+          ? `→ ${error.config.baseURL.replace(/\/$/, "")}${error.config.url}`
+          : ""
+      );
+    } else if (error.response.status === 404) {
+      console.warn(
+        "[api] 404 — check VITE_API_URL ends with /api and backend is running.",
+        error.config?.baseURL && error.config?.url
+          ? `→ ${error.config.baseURL.replace(/\/$/, "")}${error.config.url}`
+          : ""
       );
     } else {
-      console.warn(
-        `❌ API error: ${error.response.status} ${error.config?.url}`
-      );
+      console.warn(`[api] ${error.response.status}`, error.config?.url);
     }
-
     return Promise.reject(error);
   }
 );
