@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ApiErrorBanner from "../components/ui/ApiErrorBanner";
 import Navbar from "../components/ui/Navbar";
 import api from "../services/api";
+import { describeApiError } from "../utils/apiErrors";
 import hotelcover from "../assets/hotelcover.png";
 import hotelgallery1 from "../assets/hotelgallery.png";
 import hotelgallery2 from "../assets/hotelgallery2.png";
@@ -28,6 +30,7 @@ const waMeHref = (local) => {
 
 const HotelPage = () => {
   const [info, setInfo] = useState(null);
+  const [apiError, setApiError] = useState(null);
   const [language, setLanguage] = useState(() => localStorage.getItem("guest-language") || "en");
 
   useEffect(() => {
@@ -41,10 +44,16 @@ const HotelPage = () => {
     api
       .get("/hotel")
       .then((response) => {
-        if (!cancelled) setInfo(response.data);
+        if (!cancelled) {
+          setInfo(response.data);
+          setApiError(null);
+        }
       })
-      .catch(() => {
-        if (!cancelled) setInfo(null);
+      .catch((err) => {
+        if (!cancelled) {
+          setInfo(null);
+          setApiError(describeApiError(err));
+        }
       });
     return () => {
       cancelled = true;
@@ -87,6 +96,16 @@ const HotelPage = () => {
   return (
     <main className="min-h-screen bg-gradient-to-b from-black via-slate-950 to-emerald-950/70 text-slate-100">
       <Navbar language={language} onLanguageChange={setLanguage} labels={labels} />
+      {apiError ? (
+        <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6">
+          <ApiErrorBanner
+            title="Could not load hotel information"
+            message={apiError.message}
+            detail={apiError.detail}
+            onDismiss={() => setApiError(null)}
+          />
+        </div>
+      ) : null}
       <section className="mx-auto max-w-6xl space-y-5 px-4 py-6 sm:px-6">
         <section
           className="relative overflow-hidden rounded-3xl border border-emerald-200/10 bg-cover bg-center"

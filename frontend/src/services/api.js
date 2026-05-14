@@ -1,4 +1,5 @@
 import axios from "axios";
+import { describeApiError, logApiError } from "../utils/apiErrors";
 
 /**
  * Backend mounts routes under `/api` (e.g. GET /api/menu, GET /api/categories).
@@ -29,25 +30,18 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (!error.response) {
-      console.warn(
-        "[api] No response (network/CORS/backend down):",
-        error.message,
-        error.config?.baseURL && error.config?.url
-          ? `→ ${error.config.baseURL.replace(/\/$/, "")}${error.config.url}`
-          : ""
-      );
-    } else if (error.response.status === 404) {
-      console.warn(
-        "[api] 404 — check VITE_API_URL ends with /api and backend is running.",
-        error.config?.baseURL && error.config?.url
-          ? `→ ${error.config.baseURL.replace(/\/$/, "")}${error.config.url}`
-          : ""
-      );
-    } else {
-      console.warn(`[api] ${error.response.status}`, error.config?.url);
+    logApiError("response", error);
+
+    const enriched = error;
+    try {
+      const { message, detail } = describeApiError(error);
+      enriched.userMessage = message;
+      enriched.userDetail = detail;
+    } catch {
+      /* ignore */
     }
-    return Promise.reject(error);
+
+    return Promise.reject(enriched);
   }
 );
 

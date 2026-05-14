@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
+import ApiErrorBanner from "../components/ui/ApiErrorBanner";
 import api from "../services/api";
+import { describeApiError } from "../utils/apiErrors";
 import Navbar from "../components/ui/Navbar";
 import CategoryGrid from "../components/ui/CategoryGrid";
 import FilterBar from "../components/ui/FilterBar";
@@ -50,6 +52,7 @@ const MenuPage = () => {
   const [loading, setLoading] = useState(true);
   const [language, setLanguage] = useState(() => localStorage.getItem("guest-language") || "en");
   const [connectionStatus, setConnectionStatus] = useState(navigator.onLine ? "online" : "offline");
+  const [apiError, setApiError] = useState(null);
 
   const tableNumber = searchParams.get("table");
   const roomNumber = searchParams.get("room");
@@ -71,8 +74,8 @@ const MenuPage = () => {
     const loadData = async () => {
       try {
         const [menuResponse, categoriesResponse] = await Promise.all([
-          api.get("/api/menu"),
-          api.get("/api/categories"),
+          api.get("/menu"),
+          api.get("/categories"),
         ]);
         const nextItems = menuResponse.data || [];
         const nextCategories = categoriesResponse.data || [];
@@ -80,7 +83,11 @@ const MenuPage = () => {
         setCategories(nextCategories);
         localStorage.setItem("cached-menu-items", JSON.stringify(nextItems));
         localStorage.setItem("cached-menu-categories", JSON.stringify(nextCategories));
-      } catch {
+        setApiError(null);
+        setConnectionStatus("online");
+      } catch (err) {
+        const { message, detail } = describeApiError(err);
+        setApiError({ message, detail });
         try {
           const cachedItems = JSON.parse(localStorage.getItem("cached-menu-items") || "[]");
           const cachedCategories = JSON.parse(localStorage.getItem("cached-menu-categories") || "[]");
@@ -156,6 +163,16 @@ const MenuPage = () => {
   return (
     <main className="min-h-screen scroll-smooth bg-gradient-to-b from-black via-slate-950 to-emerald-950/70 text-slate-100">
       <Navbar language={language} onLanguageChange={setLanguage} labels={labels} />
+      {apiError ? (
+        <div className="mx-auto max-w-6xl px-4 pt-3 sm:px-6">
+          <ApiErrorBanner
+            title="Could not load menu"
+            message={apiError.message}
+            detail={apiError.detail}
+            onDismiss={() => setApiError(null)}
+          />
+        </div>
+      ) : null}
       <section
         id="hero"
         className="relative flex min-h-[90vh] min-h-[min(92dvh,40rem)] flex-col justify-end overflow-hidden border-b border-emerald-200/10 bg-cover bg-center bg-no-repeat px-4 pb-4 pt-[4.5rem] sm:min-h-[78vh] sm:px-6 sm:pb-8 sm:pt-24 lg:min-h-[86vh]"

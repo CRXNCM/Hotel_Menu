@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { describeApiError } from "../utils/apiErrors";
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
@@ -14,8 +15,13 @@ const AdminLoginPage = () => {
       const response = await api.post("/login", form);
       localStorage.setItem("adminToken", response.data.token);
       navigate("/admin/dashboard");
-    } catch {
-      setError("Invalid username or password.");
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        setError("Invalid username or password.");
+      } else {
+        const { message, detail } = describeApiError(error);
+        setError(detail ? `${message}\n\n${detail}` : message);
+      }
     }
   };
 
@@ -26,7 +32,9 @@ const AdminLoginPage = () => {
         className="w-full max-w-sm space-y-3 rounded-2xl border border-slate-700 bg-slate-900/80 p-5 shadow-xl"
       >
         <h2 className="text-xl font-semibold">Admin Login</h2>
-        {error && <p className="rounded bg-red-100 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && (
+          <p className="whitespace-pre-wrap rounded bg-red-100 px-3 py-2 text-sm text-red-700">{error}</p>
+        )}
         <input
           required
           className="w-full rounded-xl border border-slate-700 bg-slate-950 px-3 py-2"

@@ -5,7 +5,9 @@ import MenuTable from "../components/admin/MenuTable";
 import CategoryManager from "../components/admin/CategoryManager";
 import HotelEditor from "../components/admin/HotelEditor";
 import UploadForm from "../components/admin/UploadForm";
+import ApiErrorBanner from "../components/ui/ApiErrorBanner";
 import api from "../services/api";
+import { describeApiError } from "../utils/apiErrors";
 
 const emptyMenuForm = {
   name: "",
@@ -28,18 +30,30 @@ const AdminDashboardPage = () => {
   const [menuForm, setMenuForm] = useState(emptyMenuForm);
   const [editingId, setEditingId] = useState("");
   const [activeTask, setActiveTask] = useState("overview");
+  const [loadError, setLoadError] = useState(null);
 
   const loadData = async () => {
-    const [statsRes, itemsRes, categoriesRes, hotelRes] = await Promise.all([
-      api.get("/dashboard/stats"),
-      api.get("/menu"),
-      api.get("/categories"),
-      api.get("/hotel"),
-    ]);
-    setStats(statsRes.data);
-    setItems(itemsRes.data);
-    setCategories(categoriesRes.data);
-    setHotel(hotelRes.data);
+    setLoadError(null);
+    try {
+      const [statsRes, itemsRes, categoriesRes, hotelRes] = await Promise.all([
+        api.get("/dashboard/stats"),
+        api.get("/menu"),
+        api.get("/categories"),
+        api.get("/hotel"),
+      ]);
+      setStats(statsRes.data);
+      setItems(itemsRes.data);
+      setCategories(categoriesRes.data);
+      setHotel(hotelRes.data);
+    } catch (error) {
+      const status = error?.response?.status;
+      if (status === 401) {
+        localStorage.removeItem("adminToken");
+        navigate("/admin");
+        return;
+      }
+      setLoadError(describeApiError(error));
+    }
   };
 
   useEffect(() => {
@@ -49,7 +63,7 @@ const AdminDashboardPage = () => {
     }
 
     const timer = setTimeout(() => {
-      loadData().catch(() => navigate("/admin"));
+      loadData().catch(() => {});
     }, 0);
 
     return () => clearTimeout(timer);
@@ -92,14 +106,19 @@ const AdminDashboardPage = () => {
       setEditingId("");
       await loadData();
     } catch (error) {
-      const message = error?.response?.data?.message || "Failed to save menu item.";
-      window.alert(message);
+      const { message, detail } = describeApiError(error);
+      window.alert(detail ? `${message}\n\n${detail}` : message);
     }
   };
 
   const handleDeleteMenu = async (id) => {
-    await api.delete(`/menu/${id}`);
-    await loadData();
+    try {
+      await api.delete(`/menu/${id}`);
+      await loadData();
+    } catch (error) {
+      const { message, detail } = describeApiError(error);
+      window.alert(detail ? `${message}\n\n${detail}` : message);
+    }
   };
 
   const handleEditMenu = (item) => {
@@ -117,14 +136,24 @@ const AdminDashboardPage = () => {
   };
 
   const saveCategory = async () => {
-    await api.post("/categories", categoryForm);
-    setCategoryForm({ name: "", order: 0 });
-    await loadData();
+    try {
+      await api.post("/categories", categoryForm);
+      setCategoryForm({ name: "", order: 0 });
+      await loadData();
+    } catch (error) {
+      const { message, detail } = describeApiError(error);
+      window.alert(detail ? `${message}\n\n${detail}` : message);
+    }
   };
 
   const saveHotel = async () => {
-    await api.put("/hotel", hotel);
-    await loadData();
+    try {
+      await api.put("/hotel", hotel);
+      await loadData();
+    } catch (error) {
+      const { message, detail } = describeApiError(error);
+      window.alert(detail ? `${message}\n\n${detail}` : message);
+    }
   };
 
   const logout = () => {
@@ -164,6 +193,14 @@ const AdminDashboardPage = () => {
           onLogout={logout}
         />
         <section className="space-y-4">
+          {loadError ? (
+            <ApiErrorBanner
+              title="Could not load dashboard data"
+              message={loadError.message}
+              detail={loadError.detail}
+              onDismiss={() => setLoadError(null)}
+            />
+          ) : null}
           {activeTask === "overview" && (
             <>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -303,8 +340,13 @@ const AdminDashboardPage = () => {
               setForm={setCategoryForm}
               onSave={saveCategory}
               onDelete={async (id) => {
-                await api.delete(`/categories/${id}`);
-                await loadData();
+                try {
+                  await api.delete(`/categories/${id}`);
+                  await loadData();
+                } catch (error) {
+                  const { message, detail } = describeApiError(error);
+                  window.alert(detail ? `${message}\n\n${detail}` : message);
+                }
               }}
             />
           )}

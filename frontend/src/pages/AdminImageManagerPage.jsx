@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/admin/Sidebar";
 import api from "../services/api";
+import { describeApiError } from "../utils/apiErrors";
 import { resolveMediaUrl } from "../utils/mediaUrl";
 
 const makeSlug = (value) =>
@@ -63,8 +64,9 @@ const AdminImageManagerPage = () => {
       setSelectedItemId("");
       setSearch("");
       setSkipped(new Set());
-    } catch {
-      showToast("error", "Failed to load images or menu items.");
+    } catch (error) {
+      const { message, detail } = describeApiError(error);
+      showToast("error", detail ? `${message} — ${detail.replace(/\n/g, " ")}` : message);
     } finally {
       setLoading(false);
     }
@@ -142,7 +144,8 @@ const AdminImageManagerPage = () => {
       showToast("success", "Image renamed and mapped.");
       removeCurrentAndAdvance();
     } catch (error) {
-      showToast("error", error?.response?.data?.message || "Failed to rename and map image.");
+      const { message, detail } = describeApiError(error);
+      showToast("error", detail ? `${message} (${detail.split("\n")[0]})` : message);
     } finally {
       setSaving(false);
     }
