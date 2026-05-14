@@ -1,3 +1,6 @@
 node_modules
 .env
-uploads
+
+# Runtime uploads (menu item images, temp files for image manager)
+# Matches backend/uploads/ and everything under it (menu/, temp/, etc.)
+uploads/

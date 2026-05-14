@@ -12,15 +12,21 @@ const imageManagerRoutes = require("./routes/imageManagerRoutes");
 const app = express();
 const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
 
+const normalizeOrigin = (value) => String(value || "").trim().replace(/\/+$/, "");
+
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
-  .map((origin) => origin.trim())
+  .map((origin) => normalizeOrigin(origin))
   .filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || !allowedOrigins.length || allowedOrigins.includes(origin)) {
+      if (!origin || !allowedOrigins.length) {
+        callback(null, true);
+        return;
+      }
+      if (allowedOrigins.includes(normalizeOrigin(origin))) {
         callback(null, true);
         return;
       }

@@ -2,19 +2,52 @@ import axios from "axios";
 import { describeApiError, logApiError } from "../utils/apiErrors";
 
 /**
- * Backend mounts routes under `/api` (e.g. GET /api/menu, GET /api/categories).
- * If VITE_API_URL is only the origin (no `/api`), requests become `/menu` and return 404.
+ * Backend mounts routes under `/api` (e.g. POST /api/login).
+ * - If VITE_API_URL is only the origin, `/api` is appended.
+ * - Fixes common Vercel mistakes: pasting `VITE_API_URL=https://...` as the *value*,
+ *   or `https:/host` (one slash), which otherwise become a path on the frontend host → 405.
  */
 function normalizeApiBase(raw) {
-  const v = String(raw ?? "").trim();
+  let v = String(raw ?? "")
+    .trim()
+    .replace(/^\uFEFF/, "")
+    .replace(/^['"]|['"]$/g, "")
+    .trim();
+
+  // Whole .env line pasted as env value in Vercel: "VITE_API_URL=https://..."
+  v = v.replace(/^VITE_API_URL\s*=\s*/i, "").trim();
+
+  // "SOME_KEY=https://..." → take URL part only
+  if (/^[A-Z0-9_]+\s*=\s*https?:\/\//i.test(v)) {
+    const i = v.indexOf("=");
+    if (i !== -1) v = v.slice(i + 1).trim();
+  }
+
+  // Typo: https:/host → https://host
+  v = v.replace(/^https:\/(?!\/)/i, "https://");
+  v = v.replace(/^http:\/(?!\/)/i, "http://");
+
   if (!v) return "/api";
+
   const noTrail = v.replace(/\/+$/, "");
   if (/\/api$/i.test(noTrail)) return noTrail;
   if (noTrail === "api") return "/api";
+  if (/^https?:\/\//i.test(noTrail)) return `${noTrail}/api`;
   return `${noTrail}/api`;
 }
 
 const baseURL = normalizeApiBase(import.meta.env.VITE_API_URL);
+
+if (typeof window !== "undefined" && import.meta.env.PROD) {
+  const raw = String(import.meta.env.VITE_API_URL ?? "");
+  if (/VITE_API_URL\s*=/i.test(raw) || /^https:\/(?!\/)/i.test(raw) || /^http:\/(?!\/)/i.test(raw)) {
+    console.warn(
+      "[api] VITE_API_URL looked misconfigured; normalized to:",
+      baseURL,
+      "— In Vercel, set the variable value to only the API root, e.g. https://your-service.onrender.com/api"
+    );
+  }
+}
 
 const api = axios.create({
   baseURL,
