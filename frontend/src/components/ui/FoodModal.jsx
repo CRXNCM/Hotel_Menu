@@ -1,3 +1,5 @@
+import { resolveMediaUrl } from "../../utils/mediaUrl";
+
 const FoodModal = ({ item, onClose }) => {
   if (!item) return null;
 
@@ -5,7 +7,7 @@ const FoodModal = ({ item, onClose }) => {
     <div className="fixed inset-0 z-50 flex items-end bg-black/70 p-3 sm:items-center sm:justify-center">
       <div className="w-full max-w-lg rounded-2xl border border-slate-700 bg-slate-900 p-4 text-slate-100">
         <img
-          src={item.image || "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800"}
+          src={resolveMediaUrl(item.image) || "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800"}
           alt={item.name}
           className="h-56 w-full rounded-xl object-cover"
         />

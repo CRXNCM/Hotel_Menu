@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/admin/Sidebar";
 import api from "../services/api";
+import { resolveMediaUrl } from "../utils/mediaUrl";
 
 const makeSlug = (value) =>
   value
@@ -215,7 +216,7 @@ const AdminImageManagerPage = () => {
                 <article className="rounded-2xl border border-slate-700 bg-slate-900/70 p-4 shadow-sm">
                   <div className="overflow-hidden rounded-xl border border-slate-700 bg-slate-950">
                     <img
-                      src={currentImage.path}
+                      src={resolveMediaUrl(currentImage.path)}
                       alt={currentImage.fileName}
                       className="h-[360px] w-full object-contain md:h-[460px]"
                     />

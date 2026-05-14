@@ -1,3 +1,5 @@
+import { resolveMediaUrl } from "../../utils/mediaUrl";
+
 const FoodCard = ({ item, onOpen }) => (
   <article
     role="button"
@@ -7,7 +9,7 @@ const FoodCard = ({ item, onOpen }) => (
     className="group cursor-pointer rounded-2xl border border-emerald-200/20 bg-slate-900/55 p-3 shadow-sm backdrop-blur-sm transition duration-300 hover:-translate-y-1 hover:border-amber-300/60 hover:shadow-xl active:scale-[0.99]"
   >
     <img
-      src={item.image || "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800"}
+      src={resolveMediaUrl(item.image) || "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800"}
       alt={item.name}
       loading="lazy"
       className="h-44 w-full rounded-xl object-cover transition duration-500 group-hover:scale-[1.03]"
