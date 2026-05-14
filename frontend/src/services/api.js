@@ -1,8 +1,22 @@
 import axios from "axios";
 
+/**
+ * Production base must end with `/api` because routes live at `/api/menu`, etc.
+ * If `VITE_API_URL` is set without `/api` (common mistake), append it.
+ */
+function normalizeProductionApiBase(raw) {
+  if (raw == null || typeof raw !== "string") return "/api";
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  if (trimmed === "" || trimmed === "/api") return "/api";
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
+  }
+  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+}
+
 // In dev, always use same-origin `/api` so Vite can proxy to the backend. A full URL like
 // `http://localhost:5000/api` breaks when you open the app from another device (phone/LAN).
-const baseURL = import.meta.env.DEV ? "/api" : import.meta.env.VITE_API_URL || "/api";
+const baseURL = import.meta.env.DEV ? "/api" : normalizeProductionApiBase(import.meta.env.VITE_API_URL);
 
 const api = axios.create({
   baseURL,
