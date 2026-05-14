@@ -11,15 +11,6 @@ const imageManagerRoutes = require("./routes/imageManagerRoutes");
 
 const app = express();
 const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads");
-const port = process.env.PORT || 4000
-
-app.get('/', (req, res) => {
-  res.send('running🚀🚀🚀🚀🚀')
-})
-
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
 
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
@@ -33,7 +24,7 @@ app.use(
         callback(null, true);
         return;
       }
-      callback(new Error("CORS origin not allowed."));
+      callback(new Error(`CORS: origin "${origin}" is not in CORS_ORIGIN. Add it in Render (exact URL, e.g. https://your-app.vercel.app).`));
     },
     credentials: true,
   })
@@ -54,6 +45,10 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/image-manager", imageManagerRoutes);
 
 app.use((error, _req, res, _next) => {
+  if (error.message && String(error.message).startsWith("CORS:")) {
+    res.status(403).json({ message: error.message });
+    return;
+  }
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   res.status(statusCode).json({ message: error.message || "Server error." });
 });
