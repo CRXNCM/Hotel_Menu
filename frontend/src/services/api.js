@@ -1,43 +1,47 @@
 import axios from "axios";
 
 /**
- * Production base must end with `/api` because routes live at `/api/menu`, etc.
- * If `VITE_API_URL` is set without `/api` (common mistake), append it.
+ * Expected env:
+ * VITE_API_URL = https://your-backend.onrender.com/api
  */
-function normalizeProductionApiBase(raw) {
-  if (raw == null || typeof raw !== "string") return "/api";
-  const trimmed = raw.trim().replace(/\/+$/, "");
-  if (trimmed === "" || trimmed === "/api") return "/api";
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
-  }
-  return trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+const API_BASE = import.meta.env.VITE_API_URL;
+
+// Fail fast if env is missing (helps avoid silent 404s)
+if (!API_BASE) {
+  console.error("❌ VITE_API_URL is not defined in environment variables");
 }
 
-// In dev, always use same-origin `/api` so Vite can proxy to the backend. A full URL like
-// `http://localhost:5000/api` breaks when you open the app from another device (phone/LAN).
-const baseURL = import.meta.env.DEV ? "/api" : normalizeProductionApiBase(import.meta.env.VITE_API_URL);
-
 const api = axios.create({
-  baseURL,
+  baseURL: API_BASE,
+  timeout: 15000,
 });
 
+// Attach admin token automatically (if exists)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("adminToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
   return config;
 });
 
+// Global error handler (useful for debugging production issues)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (import.meta.env.DEV && !error.response) {
+    if (!error.response) {
       console.warn(
-        "[api] Request failed before a response (often: API not running, MongoDB down, or wrong URL).",
-        "Start backend from the `backend` folder (port 5000) and ensure MongoDB is up.",
-        error.config?.url ? `→ ${error.config.baseURL || ""}${error.config.url}` : ""
+        "❌ Network error: backend not reachable or CORS/network issue",
+        error.message
+      );
+    } else {
+      console.warn(
+        `❌ API error: ${error.response.status} ${error.config?.url}`
       );
     }
+
     return Promise.reject(error);
   }
 );
