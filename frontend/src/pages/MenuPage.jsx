@@ -71,8 +71,8 @@ const MenuPage = () => {
     const loadData = async () => {
       try {
         const [menuResponse, categoriesResponse] = await Promise.all([
-          api.get("/menu"),
-          api.get("/categories"),
+          api.get("/api/menu"),
+          api.get("/api/categories"),
         ]);
         const nextItems = menuResponse.data || [];
         const nextCategories = categoriesResponse.data || [];
