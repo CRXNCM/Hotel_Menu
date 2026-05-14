@@ -14,7 +14,7 @@ const uploadsRoot = process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads
 const port = process.env.PORT || 4000
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('running🚀🚀🚀🚀🚀')
 })
 
 app.listen(port, () => {
