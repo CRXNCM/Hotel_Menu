@@ -36,6 +36,9 @@ app.use("/uploads", express.static(uploadsRoot));
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
 });
+app.get('/', (req, res) => {
+  res.send('running🚀🚀🚀🚀🚀')
+})
 
 app.use("/api/menu", menuRoutes);
 app.use("/api/categories", categoryRoutes);
